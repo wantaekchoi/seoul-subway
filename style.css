@@ -222,6 +222,7 @@ body.show-untimed #lines li.untimed { display: block; }
   color: var(--dim);
   font-size: 11px;
   line-height: 1.5;
+  text-align: right;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
