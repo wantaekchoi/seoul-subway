@@ -75,9 +75,9 @@ export function stage(model, el) {
   });
 
   /* ---------------------------------------------------------------- 카메라 */
-  // 폰에서는 수도권 전체를 넣으면 서울 도심이 화면 높이의 1/5 로 뭉쳐 열차가 1~2px
-  // 삼각형이 된다. 좁은 화면은 2호선 순환선이 감싸는 만큼으로 시작한다 — 축소하면
-  // 나머지 수도권도 그대로 나온다.
+  // 1호선은 남으로 신창, 북으로 소요산까지 간다. 그걸 다 넣으면 서울 도심이 화면의
+  // 한 줌으로 뭉쳐 열차가 1~2px 삼각형이 된다. 2호선 순환선이 감싸는 만큼으로 시작하고
+  // 축소하면 나머지 수도권이 그대로 나온다.
   function core() {
     const on = model.staOfLine.get('2');
     if (!on || on.size < 2) return null;
@@ -102,8 +102,7 @@ export function stage(model, el) {
 
   // 축소 한계이자 선·열차 굵기의 기준. 화면 비율을 먹였으므로 world.w 와는 다르다.
   const full = fit({ x: 0, y: 0, w: model.world.w, h: model.world.h });
-  const narrow = matchMedia('(max-width: 780px)').matches;
-  const vb = { ...((narrow && core() && fit(core())) || full) };
+  const vb = { ...(core() ? fit(core()) : full) };
   el.map.setAttribute('preserveAspectRatio', 'xMidYMin meet');
 
   const cam = { k: 1, onZoom: () => {} };

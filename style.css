@@ -388,10 +388,11 @@ body.following #tonow::before { background: #5ad1a0; opacity: 1; }
 .src {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 4px;
+  gap: 5px;
+  margin-top: 2px;
   color: var(--dim);
+  opacity: .75;
   text-decoration: none;
 }
 .src:hover { color: var(--ink); }
-.src svg { width: 14px; height: 14px; fill: currentColor; }
+.src svg { width: 1em; height: 1em; fill: currentColor; }   /* 글자 크기에 맞춘다 */
