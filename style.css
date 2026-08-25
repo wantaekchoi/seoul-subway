@@ -8,7 +8,7 @@
   --dim: #7c8a9d;
   --accent: #f5c14b;
   --sw: 2.4;    /* 노선 굵기, 확대할 때 JS 가 되돌린다 */
-  --dot: 1.5;   /* 역 반지름 */
+  --dot: 3.2;   /* 역 반지름 */
 }
 
 * { box-sizing: border-box; }
@@ -50,15 +50,15 @@ html, body {
   transition: stroke-dashoffset .55s ease-out, opacity .18s linear;
 }
 #segments path.on { opacity: 1; }
-/* 주인공은 열차다. 노선은 열차가 달리는 바닥으로 물러난다. */
+/* 주인공은 열차다. 노선은 바닥으로 물러나고, 역은 열차가 지나가는 걸
+   눈이 재는 눈금으로 남는다 — 역이 안 보이면 속도가 안 보인다. */
 body.live #segments path.on { opacity: .55; }
-body.live #stations circle.on { opacity: .5; }
 
 #stations circle {
   r: var(--dot);
   fill: var(--bg);
   stroke: #8fa0b6;
-  stroke-width: calc(var(--sw) * .42);
+  stroke-width: calc(var(--sw) * .46);
   opacity: 0;
   pointer-events: none;
   transition: opacity .35s ease-out;
