@@ -1,0 +1,91 @@
+# 확장을 묶는다. 푸시하면 zip 이 아티팩트로 남고, 스토어에 올리는 건 손으로 시작한다.
+#
+# 스토어 업로드를 켜려면 저장소 시크릿 네 개가 필요하다. 없으면 그 단계는 건너뛴다.
+#   CWS_EXTENSION_ID · CWS_CLIENT_ID · CWS_CLIENT_SECRET · CWS_REFRESH_TOKEN
+name: extension
+
+on:
+  push:
+    branches: [main]
+    paths: ['manifest.json', 'newtab.*', 'style.css', 'src/**', 'data/**', 'icon/**', 'tools/pack-newtab.sh']
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 끝자리 버전을 올린다
+        type: boolean
+        default: false
+      publish:
+        description: 스토어에 올린다 (시크릿이 있어야 한다)
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 묶는다
+        run: |
+          if [ "${{ inputs.bump }}" = "true" ]; then
+            ./tools/pack-newtab.sh --bump
+          else
+            ./tools/pack-newtab.sh
+          fi
+          echo "VERSION=$(python3 -c "import json;print(json.load(open('manifest.json'))['version'])")" >> "$GITHUB_ENV"
+
+      # 올린 zip 이 실제로 열리고 매니페스트가 최상위인지 본다. 폴더로 감싸이면 스토어가 거른다.
+      - name: 묶음을 확인한다
+        run: |
+          unzip -t dist.zip > /dev/null
+          unzip -l dist.zip | grep -qE ' manifest\.json$' || { echo "manifest.json 이 최상위에 없다"; exit 1; }
+          python3 -c "
+          import json, zipfile
+          m = json.loads(zipfile.ZipFile('dist.zip').read('manifest.json'))
+          assert m['manifest_version'] == 3, m
+          for p in ('newtab.html', *m['icons'].values()):
+              zipfile.ZipFile('dist.zip').getinfo(p)
+          print('v' + m['version'], '· 파일', len(zipfile.ZipFile('dist.zip').namelist()))
+          "
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: seoul-subway-extension-v${{ env.VERSION }}
+          path: dist.zip
+
+      - name: 올린 버전을 되돌려 놓는다
+        if: inputs.bump
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manifest.json
+          git commit -m "확장 v${{ env.VERSION }}"
+          git push
+
+      - name: 스토어에 올린다
+        if: inputs.publish
+        env:
+          ID: ${{ secrets.CWS_EXTENSION_ID }}
+          CID: ${{ secrets.CWS_CLIENT_ID }}
+          SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          REFRESH: ${{ secrets.CWS_REFRESH_TOKEN }}
+        run: |
+          if [ -z "$ID" ] || [ -z "$CID" ]; then
+            echo "시크릿이 없다. 업로드를 건너뛴다."; exit 0
+          fi
+          TOKEN=$(curl -sf -X POST https://oauth2.googleapis.com/token \
+            -d client_id="$CID" -d client_secret="$SECRET" \
+            -d refresh_token="$REFRESH" -d grant_type=refresh_token \
+            | python3 -c "import sys,json;print(json.load(sys.stdin)['access_token'])")
+          curl -sf -X PUT -H "Authorization: Bearer $TOKEN" -H "x-goog-api-version: 2" \
+            -T dist.zip "https://www.googleapis.com/upload/chromewebstore/v1.1/items/$ID" | tee up.json
+          python3 -c "
+          import json
+          d = json.load(open('up.json'))
+          assert d.get('uploadState') in ('SUCCESS', 'IN_PROGRESS'), d
+          print('업로드', d['uploadState'])
+          "
+          echo "심사 제출은 스토어 대시보드에서 사람이 누른다."

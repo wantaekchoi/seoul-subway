@@ -21,7 +21,7 @@ export function panel(model, el, vm, stat) {
 
   const undated = model.net.stations.filter((s) => s.t == null);
   el.undated.textContent = undated.length
-    ? `개통일 미상 ${undated.length}개 — ${undated.map((s) => s.n).join(', ')}`
+    ? `개통일 미상 ${undated.length}개(${undated.map((s) => s.n).join(', ')}) ·`
     : '';
 
   vm.on(['at', 'mode', 'table', 'pick'], () => {

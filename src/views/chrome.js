@@ -13,10 +13,10 @@ export function chrome(model, el, vm) {
   const t = vm.today();
   const h = model.holidays;
   el.holiday.textContent =
-    !h ? '공휴일은 요일로 가리지 못합니다. 휴일 시간표는 직접 선택해 주세요.'
-    : !t.known ? `공휴일 표가 ${h.to}년까지라 그 뒤로는 요일로만 고릅니다. 휴일 시간표는 직접 선택해 주세요.`
-    : t.name ? `오늘은 ${t.name}이라 휴일 시간표로 시작합니다.`
-    : `공휴일은 자동으로 가립니다. 표는 ${h.to}년까지 있습니다.`;
+    !h ? '공휴일은 직접 골라야 합니다 ·'
+    : !t.known ? `공휴일 표가 ${h.to}년까지 · 그 뒤는 직접 골라야 합니다 ·`
+    : t.name ? `오늘은 ${t.name} · 휴일 시간표 ·`
+    : `공휴일 자동(${h.to}년까지) ·`;
 
   el.modes.addEventListener('click', (e) => {
     const b = e.target.closest('button');
