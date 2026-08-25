@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "수도권 전철",
+  "version": "1.0.0",
+  "description": "새 탭에 지금 이 시각의 수도권 전철 열차 위치를 시간표대로 그립니다.",
+  "default_locale": "ko",
+  "chrome_url_overrides": { "newtab": "newtab.html" },
+  "icons": { "16": "icon/16.png", "48": "icon/48.png", "128": "icon/128.png" },
+  "offline_enabled": true
+}

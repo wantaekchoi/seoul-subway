@@ -28,6 +28,12 @@ export function chrome(model, el, vm) {
   el.day.addEventListener('change', () => vm.setDay(el.day.value));
   el.slider.addEventListener('input', () => vm.seek(+el.slider.value));
   el.untimed.addEventListener('click', () => vm.toggleUntimed());
+  el.bare.addEventListener('click', () => vm.toggleBare());
+  addEventListener('keydown', (e) => {
+    // 입력칸에 있을 때는 가로채지 않는다.
+    if (e.key.toLowerCase() === 'h' && !e.metaKey && !e.ctrlKey && !e.altKey
+        && !/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) vm.toggleBare();
+  });
 
   vm.on(['mode'], () => {
     document.body.classList.remove('live', 'year');
@@ -53,6 +59,11 @@ export function chrome(model, el, vm) {
 
   vm.on(['rate'], () => { el.rate.value = String(vm.rate); });
   vm.on(['day'], () => { el.day.value = vm.day; });
+  vm.on(['bare'], () => {
+    document.body.classList.toggle('bare', vm.bare);
+    el.bare.textContent = vm.bare ? '보이기' : '가리기';
+  });
+
   vm.on(['showUntimed'], () => {
     document.body.classList.toggle('show-untimed', vm.showUntimed);
     el.untimed.textContent = vm.showUntimed ? '시간표 없는 노선 숨기기' : `시간표 없는 노선 ${untimed}개 보기`;

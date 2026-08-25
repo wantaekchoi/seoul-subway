@@ -16,4 +16,7 @@ https://wantaekchoi.github.io/seoul-subway/
 `data/` 는 위에서 받아 구운 것이고, 굽는 절차는 `tools/` 에 있습니다. 페이지가
 열린 뒤에 부르는 API 는 없습니다.
 
+크롬 새 탭으로도 쓸 수 있습니다. `./tools/pack-newtab.sh` 로 묶은 뒤 확장 프로그램
+페이지에서 개발자 모드로 `dist/` 를 불러오면 됩니다.
+
 코드는 MIT, 데이터는 각 출처의 조건을 따릅니다.

@@ -396,3 +396,20 @@ body.following #tonow::before { background: #5ad1a0; opacity: 1; }
 }
 .src:hover { color: var(--ink); }
 .src svg { width: 1em; height: 1em; fill: currentColor; }   /* 글자 크기에 맞춘다 */
+
+/* 지도만 보고 싶을 때. 되돌릴 길(독크의 버튼)은 늘 남겨 둔다 — 각주가 표기 의무라
+   가린 채로 길이 없으면 안 된다. */
+#bare {
+  flex: none;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  background: #131a24;
+  color: var(--dim);
+  font: inherit;
+  font-size: 13px;
+  padding: 5px 11px;
+  cursor: pointer;
+}
+#bare:hover { border-color: var(--dim); color: var(--ink); }
+body.bare #side, body.bare #foot { opacity: 0; pointer-events: none; }
+#side, #foot { transition: opacity .25s ease-out; }

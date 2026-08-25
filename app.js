@@ -19,7 +19,7 @@ const $ = (id) => document.getElementById(id);
 const el = {
   map: $('map'), tip: $('tip'), big: $('big'), sub: $('sub'), note: $('note'),
   lines: $('lines'), recent: $('recent'), undated: $('undated'), untimed: $('untimed'),
-  holiday: $('holiday'),
+  holiday: $('holiday'), bare: $('bare'),
   tonow: $('tonow'), rate: $('rate'), play: $('play'), slider: $('slider'),
   tag: $('tag'), day: $('day'), modes: $('modes'), loading: $('loading'),
 };

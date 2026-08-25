@@ -31,6 +31,7 @@ export function createVM(model) {
     table: null,        // 그 요일 시간표
     pick: null,         // 하이라이트한 노선 id
     showUntimed: false, // 시간표 없는 노선을 곁 화면에 펼쳐 두었나
+    bare: false,        // 곁 화면과 각주를 걷어 지도만 보는 중인가
     error: '',
   };
 
@@ -196,6 +197,7 @@ export function createVM(model) {
     /** 한 노선만 남기고 흐리게. 같은 줄을 다시 누르면 전부 되돌린다. */
     togglePick(l) { vm.pick = state.pick === l ? null : l; },
     toggleUntimed() { vm.showUntimed = !state.showUntimed; },
+    toggleBare() { vm.bare = !state.bare; },
 
     setDay(d) {
       vm.day = d;
