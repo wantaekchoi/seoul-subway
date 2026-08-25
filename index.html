@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>수도권 전철 — 지금 달리는 열차</title>
+<meta name="description" content="시간표대로 수도권 전철 노선도 위를 열차가 달린다. 연도를 움직이면 노선망이 자라난다.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="live">
+
+<svg id="map" role="img" aria-label="수도권 전철 노선망 지도"></svg>
+<div id="tip" hidden></div>
+
+<header id="head">
+  <h1>수도권 전철</h1>
+  <div id="big">—</div>
+  <p id="sub"></p>
+  <p id="note" hidden></p>
+</header>
+
+<aside id="side">
+  <h2 class="only-live">노선별 운행</h2>
+  <h2 class="only-year">최근 개통</h2>
+  <ul id="lines" class="only-live"></ul>
+  <button id="untimed" class="only-live" type="button" hidden></button>
+  <ol id="recent" class="only-year"></ol>
+</aside>
+
+<footer id="foot">
+  <p class="only-live">표시된 위치는 시간표 기준입니다. 실제 지연·운휴는 반영되지 않습니다.
+     시간표가 있는 노선은 1~9호선이며, 나머지 15개 노선은 경로만 표시합니다.</p>
+  <p class="only-live" id="holiday"></p>
+  <p class="only-year" id="undated"></p>
+  <p>노선 형상 <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> ODbL ·
+     역 개통일 <a href="https://www.wikidata.org">Wikidata</a> CC0 ·
+     행정경계 SGIS 공공누리 제1유형</p>
+  <p>열차 시간표는 <b>서울특별시 공공데이터</b>를 이용해 만들었습니다.</p>
+</footer>
+
+<div id="dock">
+  <div id="modes">
+    <button data-mode="live" aria-pressed="true">지금</button>
+    <button data-mode="year" aria-pressed="false">연표</button>
+  </div>
+  <button id="play" aria-label="재생">▶</button>
+  <button id="tonow" class="only-live" title="현재 시각으로 돌아갑니다">현재 시각</button>
+  <input id="slider" type="range" min="0" max="86340" step="60" value="0" aria-label="시각">
+  <output id="tag"></output>
+  <label id="ratewrap" class="only-live">
+    <select id="rate" aria-label="배속">
+      <option value="1">1배속</option>
+      <option value="10">10배속</option>
+      <option value="60">60배속</option>
+      <option value="120">120배속</option>
+    </select>
+  </label>
+  <label id="daywrap" class="only-live">
+    <select id="day" aria-label="요일 구분">
+      <option value="1">평일</option>
+      <option value="2">토요일</option>
+      <option value="3">휴일</option>
+    </select>
+  </label>
+</div>
+
+<p id="loading">불러오는 중…</p>
+<script type="module" src="app.js"></script>
+</body>
+</html>

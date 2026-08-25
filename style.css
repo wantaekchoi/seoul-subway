@@ -1,0 +1,385 @@
+:root {
+  --bg: #070a0f;      /* 바다·북녘. 자료가 없는 곳은 다 이 색이다 */
+  --land: #101722;
+  --edge: #1b2534;
+  --water: #14314e;
+  --card: rgba(8, 12, 18, .76);
+  --ink: #e8eef6;
+  --dim: #7c8a9d;
+  --accent: #f5c14b;
+  --sw: 2.4;    /* 노선 굵기, 확대할 때 JS 가 되돌린다 */
+  --dot: 1.5;   /* 역 반지름 */
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard",
+        "Malgun Gothic", system-ui, sans-serif;
+  overflow: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ---------------------------------------------------------------- 지도 */
+
+#map {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  cursor: grab;
+}
+#map.dragging { cursor: grabbing; }
+
+#land { fill: var(--land); stroke: var(--edge); stroke-width: .45; }
+#water { fill: var(--water); stroke: none; }
+
+#segments path {
+  fill: none;
+  stroke-width: var(--sw);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+  /* 길이 0 인 대시도 둥근 선끝은 점으로 찍힌다. 꺼진 구간은 opacity 로도 같이 가려야 한다. */
+  transition: stroke-dashoffset .55s ease-out, opacity .18s linear;
+}
+#segments path.on { opacity: 1; }
+/* 주인공은 열차다. 노선은 열차가 달리는 바닥으로 물러난다. */
+body.live #segments path.on { opacity: .42; }
+body.live #stations circle.on { opacity: .45; }
+
+#stations circle {
+  r: var(--dot);
+  fill: var(--bg);
+  stroke: #8fa0b6;
+  stroke-width: calc(var(--sw) * .42);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .35s ease-out;
+}
+#stations circle.on { opacity: .85; pointer-events: auto; }
+/* 방금 열린 역은 잠깐 노랗게 튄다 — 시선이 어디서 자랐는지 따라가도록 */
+#stations circle.fresh {
+  r: calc(var(--dot) * 2.2);
+  stroke: var(--accent);
+  stroke-width: calc(var(--sw) * .8);
+  fill: rgba(245, 193, 75, .18);
+  opacity: 1;
+}
+
+/* 둥근 삼각형. 코가 진행 방향을 가리킨다. */
+#trains path {
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+/* ---------------------------------------------------------------- 판 */
+
+#head, #side, #foot {
+  position: fixed;
+  z-index: 2;
+  background: var(--card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, .06);
+  border-radius: 14px;
+}
+
+#head {
+  top: 16px; left: 16px;
+  padding: 14px 18px 16px;
+  min-width: 208px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  color: var(--dim);
+}
+
+#big {
+  font-size: 54px;
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+  margin: 4px 0 2px;
+}
+
+#sub { margin: 0; color: var(--dim); font-variant-numeric: tabular-nums; }
+#sub b { color: var(--ink); font-weight: 600; }
+
+#note {
+  margin: 8px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, .08);
+  color: var(--accent);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+#note[hidden] { display: none; }
+
+#side {
+  top: 16px; right: 16px;
+  width: 244px;
+  max-height: calc(100% - 150px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 14px 16px;
+}
+
+h2 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  color: var(--dim);
+}
+
+#lines, #recent {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-variant-numeric: tabular-nums;
+}
+#lines li, #recent li {
+  font-size: 13px;
+  opacity: .3;
+  transition: opacity .3s;
+}
+#lines li.on, #recent li { opacity: 1; }
+#recent li { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+
+/* 노선 줄은 누를 수 있다 — 누르면 그 노선만 남는다. */
+#lines .row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 3px 6px;
+  margin: 0 -6px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+#lines .row:hover { background: rgba(255, 255, 255, .05); }
+#lines li.pick .row { background: #1d2735; }
+
+/* 시간표가 없어 세는 수가 없는 노선은 접어 둔다. */
+#lines li.untimed { display: none; }
+body.show-untimed #lines li.untimed { display: block; }
+
+#untimed {
+  margin-top: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--dim);
+  font: inherit;
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+#untimed:hover { color: var(--ink); }
+
+/* 한 노선을 고르면 나머지는 흐려진다. 지워지는 게 아니라 뒤로 물러난다. */
+#segments path.off, #stations circle.off, #trains path.off { opacity: .07; }
+#lines .chip { width: 12px; height: 3px; border-radius: 2px; flex: none; }
+#recent .chip { width: 3px; height: 13px; border-radius: 2px; flex: none; }
+#lines .nm, #recent .nm { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#lines .ct, #recent .dt { color: var(--dim); font-size: 12px; flex: none; }
+#recent li.new .nm { color: var(--accent); }
+
+#foot {
+  left: 16px;
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  max-width: 380px;
+  padding: 10px 14px;
+  color: var(--dim);
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+#foot p { margin: 0; }
+#foot p + p { margin-top: 3px; }
+#foot a { color: inherit; }
+#foot b { color: #a9b6c7; font-weight: 600; }
+
+body.live .only-year, body.year .only-live { display: none; }
+
+/* ---------------------------------------------------------------- 조작 */
+
+#dock {
+  position: fixed;
+  z-index: 3;
+  left: 0; right: 0; bottom: 0;
+  padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(0deg, var(--bg) 52%, transparent);
+}
+
+#modes {
+  flex: none;
+  display: flex;
+  padding: 2px;
+  border: 1px solid var(--edge);
+  border-radius: 9px;
+  background: #0d131c;
+}
+#modes button {
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--dim);
+  font: inherit;
+  font-size: 13px;
+  padding: 4px 13px;
+  cursor: pointer;
+}
+#modes button[aria-pressed="true"] { background: #1d2735; color: var(--ink); }
+
+#play {
+  flex: none;
+  width: 38px; height: 38px;
+  border: 1px solid var(--edge);
+  border-radius: 50%;
+  background: #131a24;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+#play:hover { border-color: var(--dim); }
+
+#slider {
+  flex: 1;
+  min-width: 60px;
+  appearance: none;
+  -webkit-appearance: none;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--edge);
+  cursor: pointer;
+}
+#slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: grab;
+}
+#slider::-moz-range-thumb {
+  width: 15px; height: 15px; border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+#tag {
+  flex: none;
+  min-width: 5ch;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+}
+
+#daywrap, #ratewrap { flex: none; }
+#day, #rate {
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  background: #131a24;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  padding: 5px 8px;
+  cursor: pointer;
+}
+
+#tip {
+  position: fixed;
+  z-index: 4;
+  padding: 5px 9px;
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  background: #131a24;
+  font-size: 12.5px;
+  pointer-events: none;
+  white-space: nowrap;
+  transform: translate(-50%, -140%);
+}
+#tip b { font-weight: 600; }
+#tip span { color: var(--dim); margin-left: 6px; font-variant-numeric: tabular-nums; }
+
+#loading {
+  position: fixed;
+  z-index: 5;
+  inset: 0;
+  display: grid; place-content: center;
+  margin: 0; color: var(--dim);
+  background: var(--bg);
+}
+#loading[hidden] { display: none; }
+
+/* ---------------------------------------------------------------- 좁은 화면 */
+
+@media (max-width: 780px) {
+  #head { top: 10px; left: 10px; padding: 10px 14px 12px; min-width: 0; }
+  #big { font-size: 38px; }
+  #sub { font-size: 13px; }
+  #side { display: none; }
+
+  #foot {
+    left: 10px; right: 10px;
+    bottom: calc(104px + env(safe-area-inset-bottom));
+    max-width: none;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  #dock {
+    flex-wrap: wrap;
+    gap: 10px 12px;
+    padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+  }
+  #slider { flex: 1 1 100%; order: -1; }
+  #tag { min-width: 0; }
+  #daywrap { margin-left: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #segments path, #stations circle { transition: none; }
+}
+
+/* 현재 시각을 따라가는 중이면 불이 들어온다. 슬라이더를 끌거나 멈추면 꺼진다. */
+#tonow {
+  flex: none;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  background: #131a24;
+  color: var(--dim);
+  font: inherit;
+  font-size: 13px;
+  padding: 5px 11px;
+  cursor: pointer;
+}
+#tonow:hover { border-color: var(--dim); }
+#tonow::before {
+  content: ''; width: .42em; height: .42em; margin-right: .45em;
+  border-radius: 50%; background: currentColor; opacity: .35;
+  display: inline-block; vertical-align: .05em;
+}
+body.following #tonow { color: var(--ink); }
+body.following #tonow::before { background: #5ad1a0; opacity: 1; }
