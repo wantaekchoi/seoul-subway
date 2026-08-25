@@ -4,7 +4,7 @@
 const NS = 'http://www.w3.org/2000/svg';
 export const svg = (name) => document.createElementNS(NS, name);
 
-const BASE_SW = 2.4, BASE_DOT = 1.5, BASE_TRAIN = 1.25;
+const BASE_SW = 2.4, BASE_DOT = 2.2, BASE_TRAIN = 1.25;
 
 export function stage(model, el) {
   const { net, topo } = model;

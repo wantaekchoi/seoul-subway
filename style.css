@@ -51,8 +51,8 @@ html, body {
 }
 #segments path.on { opacity: 1; }
 /* 주인공은 열차다. 노선은 열차가 달리는 바닥으로 물러난다. */
-body.live #segments path.on { opacity: .42; }
-body.live #stations circle.on { opacity: .45; }
+body.live #segments path.on { opacity: .55; }
+body.live #stations circle.on { opacity: .5; }
 
 #stations circle {
   r: var(--dot);
