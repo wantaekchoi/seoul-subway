@@ -383,3 +383,15 @@ body.live .only-year, body.year .only-live { display: none; }
 }
 body.following #tonow { color: var(--ink); }
 body.following #tonow::before { background: #5ad1a0; opacity: 1; }
+
+/* 저장소로 가는 길. 각주 끝에 작게 둔다. */
+.src {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  color: var(--dim);
+  text-decoration: none;
+}
+.src:hover { color: var(--ink); }
+.src svg { width: 14px; height: 14px; fill: currentColor; }
